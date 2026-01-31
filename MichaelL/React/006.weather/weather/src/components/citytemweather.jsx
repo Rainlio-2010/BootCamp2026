@@ -57,7 +57,8 @@ function Citycard() {
             })
             setMessage('成功了！！！');
         } catch (error) {
-            setMessage('成功失败！');
+            console.error('获取天气数据失败：', error);
+            setMessage('数据加载失败');
         }
     }
 
