@@ -52,7 +52,6 @@ function getHourlyWeather(data) {
     const hoursRow = document.querySelector('.hours-row');
     hoursRow.innerHTML = '';
 
-    // Loop through the first 8 items (8 * 3 hours = 24 hours)
     for (let i = 0; i < 8 && i < list.length; i++) {
         const item = list[i];
         const date = new Date(item.dt * 1000);
@@ -83,23 +82,19 @@ function getDailyWeather(data) {
     const list = data.list;
     const dailyForecasts = [];
 
-    // Group data by date to find daily highs
     list.forEach(item => {
         const date = new Date(item.dt * 1000);
-        // Use full date string to verify uniqueness (handles month rollovers)
         const dateString = date.toLocaleDateString();
 
-        // Check if we already have this day in our list
         const existingDay = dailyForecasts.find(d => d.dateString === dateString);
 
         if (!existingDay) {
             dailyForecasts.push({
                 dateString: dateString,
                 date: date,
-                maxTemp: item.main.temp_max || item.main.temp // Fallback to temp if temp_max not distinct in list
+                maxTemp: item.main.temp_max || item.main.temp
             });
         } else {
-            // Update max temp for the day
             const currentMax = item.main.temp_max || item.main.temp;
             if (currentMax > existingDay.maxTemp) {
                 existingDay.maxTemp = currentMax;
@@ -107,25 +102,14 @@ function getDailyWeather(data) {
         }
     });
 
-    // We want the forecast starting from Tomorrow? 
-    // The user said "change day 1 to sunday becasue today is saturday". 
-    // This implies the list should start with tomorrow. 
-    // Let's filter out "Today" if the first item is today.
-
     const todayString = new Date().toLocaleDateString();
-    // Verify if first item is today
+
     if (dailyForecasts.length > 0 && dailyForecasts[0].dateString === todayString) {
-        // If we want to strictly follow "Day 1 is Sunday (tomorrow)", we remove today.
-        // However, usually showing Today is good. 
-        // But based on the user request, I'll shift it so Day 1 aligns with their expectation if possible,
-        // or just label them clearly. 
-        // If I label them "Saturday", "Sunday", it is clear.
-        // I will keep Today but label it accurately.
+
     }
 
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    // Display the days
     for (let i = 0; i < 5; i++) {
         const element = document.getElementById('day-' + (i + 1));
         if (element) {
@@ -147,6 +131,5 @@ function getAirHumidity(data) {
 
 function getWindSpeed(data) {
     const windSpeed = data.list[0].wind.speed;
-    // Conversion from m/s to km/h: multiply by 3.6
     document.getElementById('wind-speed').textContent = Math.round(windSpeed * 3.6) + 'km/h';
 }
