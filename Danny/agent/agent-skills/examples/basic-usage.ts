@@ -75,6 +75,28 @@ async function main() {
           },
           system: systemPrompt,
           messages: messages,
+          onStepFinish: (step) => {
+            if (step.toolCalls.length > 0) {
+              console.log("\n--- [Thinking] Tool Call ---");
+              step.toolCalls.forEach((call) => {
+                console.log(`Tool: ${call.toolName}`);
+                // @ts-ignore
+                console.log(`Input: ${JSON.stringify(call.input, null, 2)}`);
+              });
+            }
+
+            if (step.toolResults.length > 0) {
+              console.log("\n--- [Thinking] Tool Result ---");
+              step.toolResults.forEach((result) => {
+                console.log(`Tool: ${result.toolName}`);
+                // @ts-ignore
+                console.log(
+                  `Result: ${JSON.stringify(result.output, null, 2)}`,
+                );
+                console.log("\n");
+              });
+            }
+          },
         });
 
         console.log(`\nAI: ${result.text}`);
