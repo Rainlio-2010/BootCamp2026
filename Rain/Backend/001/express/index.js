@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const port = 3000;
 
-const Joi = require("joi/lib");
+const Joi = require("../../../javascript/Backend/001/express/node_modules/joi/lib");
 
 app.use(express.json());
 
