@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const port = 3000;
 
-const Joi = require("../../../javascript/Backend/001/express/node_modules/joi/lib");
+const Joi = require("joi/lib");
 
 app.use(express.json());
 
@@ -69,8 +69,3 @@ function validateProduct(product) {
     })
     return schema.validate(product);
 }
-
-
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
