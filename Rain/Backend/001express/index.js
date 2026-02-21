@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
-app.get("/api/products ", (req, res) => {
+app.get("/api/products", (req, res) => {
     res.send(products);
 });
 
@@ -69,3 +69,7 @@ function validateProduct(product) {
     })
     return schema.validate(product);
 }
+
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
