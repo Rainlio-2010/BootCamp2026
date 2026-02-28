@@ -6,12 +6,12 @@ export const CreateProductElement = (product, onDelete) => {
     <div>
         <h1>${product.name}</h1>
         <p>${formatPrice(product.price)}</p>
-        <button class="delete-btn">Delete</button>
+        <button class="delete-button">Delete</button>
     </div>
     `;
 
-    const deleteBtn = div.querySelector(".delete-btn");
-    deleteBtn.addEventListener("click", () => {
+    const deleteButton = div.querySelector(".delete-button");
+    deleteButton.addEventListener("click", () => {
         onDelete(product.id);
     });
 

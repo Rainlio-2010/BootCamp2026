@@ -9,18 +9,19 @@ let products = [
 ];
 let filterText = "";
 
+let nextId = 4;
+
 const addFormContainer = document.getElementById("product-add-form-container");
 const filterContainer = document.getElementById("product-filter-container");
 const productListContainer = document.getElementById("product-list-container");
 
 const addProduct = (name, price) => {
-    const maxId = products.length;
     const newproduct = {
-        id: maxId + 1,
+        id: nextId,
         name: name,
         price: price
     };
-
+    nextId++;
     products.push(newproduct);
     renderApp();
 }
@@ -36,10 +37,9 @@ const updateFilter = (text) => {
 };
 
 function renderApp() {
-    if (productListContainer) {
-        productListContainer.innerHTML = "";
-    }
+    if (!productListContainer) return
 
+    productListContainer.innerHTML = "";
     const filtered = products.filter((p) =>
         p.name.toLowerCase().includes(filterText.toLowerCase())
     );
