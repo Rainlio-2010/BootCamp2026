@@ -6,12 +6,13 @@ const Joi = require("joi/lib");
 
 app.use(express.json());
 
-
 let products = [
     { id: 1, name: "Product 1", price: 10 },
     { id: 2, name: "Product 2", price: 20 },
     { id: 3, name: "Product 3", price: 30 },
 ];
+
+
 
 app.get("/", (req, res) => {
     res.send("Hello World!");
@@ -53,8 +54,11 @@ app.post("/api/products", (req, res) => {
     if (error) {
         return res.status(400).send(error.details[0].message);
     }
+
+    const maxId = products.length > 0 ? Math.max(...products.map(p => p.id)) : 0;
+
     const product = {
-        id: products.length + 1,
+        id: maxId + 1,
         name: value.name,
         price: value.price,
     }

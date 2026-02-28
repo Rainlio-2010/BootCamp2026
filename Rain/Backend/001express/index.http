@@ -9,7 +9,7 @@ Content-Type: application/json
 }
 
 ### delete a product
-DELETE http://localhost:3000/api/products/1
+DELETE http://localhost:3000/api/products/3
 
 ### update a product
 PUT http://localhost:3000/api/products/1
