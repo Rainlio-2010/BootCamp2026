@@ -1,0 +1,31 @@
+.Large-box {
+    height: 600px;
+    /* Reduced slightly for standard screens */
+    width: 600px;
+    margin: 50px auto;
+    /* Centers the box */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    background: #333;
+    /* This color acts as the lines between cells */
+    gap: 10px;
+    /* This determines the thickness of the lines */
+}
+
+.cell {
+    background: #e6d8d8;
+    /* The default background color for the cells */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cell:hover {
+    background: #d4c5c5;
+    /* Darkens slightly when hovering over a cell */
+}
