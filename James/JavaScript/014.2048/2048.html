@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>2048</title>
+    <style>
+        body {
+            margin: 0;
+            /* 去除浏览器默认外边距 */
+            height: 100vh;
+            /* 让 body 高度等于视口高度（100% 窗口高度） */
+            display: flex;
+            flex-direction: column;
+            font-family: monospace;
+            padding: 20px;
+            line-height: 1.5;
+            justify-content: center;
+            align-items: center;
+            /* 水平和垂直居中内容 */
+            background-color: #faf8ef;
+            /* 2048 常用背景色 */
+
+
+        }
+
+        .matrix-display {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #grid-container {
+            display: grid;
+            /* 定义 4 列，每列宽度平分 */
+            grid-template-columns: repeat(4, 1fr);
+            /* 定义 4 行，每行高度平分（也可以固定高度） */
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            /* 格子之间的间距 */
+            width: 400px;
+            height: 400px;
+        }
+
+        .grid-item {
+            /* 基础尺寸与布局 */
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            /* 确保格子始终是正方形 */
+            /* 核心居中技术：Flexbox */
+            display: flex;
+            justify-content: center;
+            /* 水平居中 */
+            align-items: center;
+            /* 垂直居中 */
+
+            /* 字体美化 */
+            font-size: 35px;
+            /* 初始大字体 */
+            font-weight: 800;
+            /* 极粗字体，更有质感 */
+            font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+            /* 2048 常用字体 */
+            border-radius: 5px;
+            /* 轻微圆角 */
+            transition: all 0.1s;
+            /* 变色时的平滑过渡 */
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- <h2>请按 F12 查看控制台 (Console)</h2>
+    <p>页面同步显示如下：</p> -->
+
+
+
+
+
+    <div id="output" class="matrix-display">2048</div>
+
+    <!-- 我要一个现实界面,能看到一个4*4的格子,并且显示对应data里的数字 -->
+    <div id="grid-container"></div>
+
+
+
+    <div style=" display: flex; flex-direction: column; align-items: center; gap: 10px; width: 200px; margin: 20px
+            auto;">
+        <div id="up" class="button" style="width: 80px;">up</div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <div id="left" class="button" style="width: 80px;">left</div>
+            <div id="start" class="button" style="width: 80px;">start</div>
+            <div id="right" class="button" style="width: 80px;">right</div>
+        </div>
+        <div id="down" class="button" style="width: 80px;">down</div>
+    </div>
+
+    <script>
+
+        const output = document.getElementById('output');
+        const btn = document.getElementById('start');
+        const btnl = document.getElementById('left');
+        const btnr = document.getElementById('right')
+        const btnu = document.getElementById('up')
+        const btnd = document.getElementById('down')
+        // 1. 创建 4x4 的全零二维数组
+        let data = [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ];
+
+
+        /**
+ * 根据数字获取对应的样式
+ * @param {number} value - 格子里的数字
+ * @returns {object} 包含背景色和字体色的对象
+ */
+        function getStyleByValue(value) {
+            // 默认样式（0的情况）
+            let style = { bg: "#eee4da", color: "#776e65" };
+
+            if (value === 0) return style;
+
+            // 2 到 2048 的色阶（淡黄到橙色）
+            const colors = {
+                2: { bg: "#eee4da", color: "#776e65" },
+                4: { bg: "#ede0c8", color: "#776e65" },
+                8: { bg: "#f2b179", color: "#f9f6f2" },
+                16: { bg: "#f59563", color: "#f9f6f2" },
+                32: { bg: "#f67c5f", color: "#f9f6f2" },
+                64: { bg: "#f65e3b", color: "#f9f6f2" },
+                128: { bg: "#edcf72", color: "#f9f6f2" },
+                256: { bg: "#edcc61", color: "#f9f6f2" },
+                512: { bg: "#edc850", color: "#f9f6f2" },
+                1024: { bg: "#edc53f", color: "#f9f6f2" },
+                2048: { bg: "#edc22e", color: "#f9f6f2" },
+            };
+
+            if (value <= 2048) {
+                style = colors[value] || style;
+            } else if (value <= 4096) {
+                // 4096 左右开始进入深橙色
+                style = { bg: "#e5b710", color: "#f9f6f2" };
+            } else {
+                // 4096 到 13万：橙色走向黑色
+                // 简单逻辑：数字越大，亮度越低
+                style = { bg: "#3c3a32", color: "#f9f6f2" };
+            }
+
+            return style;
+        }
+
+        function addRrandomNumber() {
+            const emptyCells = [];
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    if (data[r][c] === 0) {
+                        emptyCells.push({ r, c });
+                    }
+                }
+            };
+            if (emptyCells.length > 0) {
+                const { r, c } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                data[r][c] = Math.random() < 0.8 ? 2 : 4;
+            }
+        }
+
+
+        function filter(list, value) {
+            let temp = []
+            for (let a = 0; a < list.length; a++) {
+                if (list[a] !== value) {
+                    temp.push(list[a])
+                }
+            }
+            return temp
+        }
+
+        // const r = [2, 3, 3, 4, 5, 6]
+        // console.log(filter(r, 3))
+
+        function merges(list) {
+            postionMap = []
+            for (let a = 0; a < list.length - 1; a++) {
+                if (list[a] === list[a + 1]) {
+                    list[a] = list[a] * 2
+                    list[a + 1] = 0
+                }
+
+            }
+            return list
+        }
+
+        // console.log(merges([2, 2, 0, 4]))
+
+        function addZeros(list) {
+            const lll = list.length
+            if (lll >= 4) {
+            } else {
+                for (let a = 0; a < 4 - lll; a++) {
+                    list.push(0)
+                }
+            }
+            return list
+        }
+
+        // console.log(addZeros([]))
+
+
+        function Turn90C() {
+            let temp = [
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ]
+            for (let r = 0; r < 4; r++) {
+                for (let c = 3; c >= 0; c--) {
+                    temp[c][r] = data[r][3 - c]
+                }
+            }
+            return temp
+        }
+
+        function Turn90N() {
+            let temp = [
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ]
+            for (let r = 0; r < 4; r++) {
+                for (let c = 3; c >= 0; c--) {
+                    temp[c][3 - r] = data[r][c]
+                }
+            }
+            return temp
+        }
+
+        function reverse() {
+            let temp = data
+            for (let r = 0; r < 4; r++) {
+                temp[r].reverse()
+            }
+
+            return temp
+
+        }
+
+
+
+        function leftmove() {
+            for (let r = 0; r < 4; r++) {
+                data[r] = addZeros(filter(merges(filter(data[r], 0)), 0))
+
+            }
+
+        }
+
+        function rightmove() {
+            data = reverse()
+            leftmove()
+            data = reverse()
+
+        }
+
+        function upmove() {
+            data = Turn90C()
+            leftmove()
+            data = Turn90N()
+        }
+
+        function downmove() {
+            data = Turn90N()
+            leftmove()
+            data = Turn90C()
+
+        }
+
+
+        function renderGrid(gridData, container) {
+            container.innerHTML = '';
+
+            gridData.forEach(row => {
+                row.forEach(num => {
+                    const item = document.createElement('div');
+                    item.className = 'grid-item';
+
+                    // 1. 设置显示的文本（如果是0，可以显示为空白或者0）
+                    item.textContent = num === 0 ? "" : num;
+
+                    // 2. 获取对应的颜色样式
+                    const { bg, color } = getStyleByValue(num);
+
+                    // 3. 应用样式
+                    item.style.backgroundColor = bg;
+                    item.style.color = color;
+
+                    // 针对大数字缩小字体，防止溢出
+                    if (num >= 1000) {
+                        item.style.fontSize = "16px";
+                    }
+
+                    container.appendChild(item);
+                });
+            });
+        }
+
+        function initgame() {
+            data = [
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ]
+            for (let i = 0; i < 2; i++) {
+                addRrandomNumber();
+            }
+        }
+
+        const gridBox = document.getElementById('grid-container')
+
+        renderGrid(data, gridBox)
+        initgame()
+
+
+        //prsss N to restart
+        addEventListener('keydown', function (event) {
+            if (event.key === 'n' || event.key === 'N') {
+                initgame()
+                renderGrid(data, gridBox)
+            }
+        });
+
+
+
+
+        btn.addEventListener('click', function () {
+            initgame()
+
+            renderGrid(data, gridBox)
+        });
+
+        // btnl.addEventListener('click', function () {
+        //     leftmove()
+
+        //     addRrandomNumber();
+        //     renderGrid(data, gridBox)
+
+        //     console.table(data);
+        //     // output.textContent = data.map(row => row.join(' ')).join('\n');
+        // });
+
+        // btnr.addEventListener('click', function () {
+        //     rightmove()
+
+        //     addRrandomNumber();
+        //     renderGrid(data, gridBox)
+
+        //     console.table(data);
+        //     // output.textContent = data.map(row => row.join(' ')).join('\n');
+        // });
+
+        // btnu.addEventListener('click', function () {
+        //     upmove()
+
+        //     addRrandomNumber();
+        //     renderGrid(data, gridBox)
+
+        //     console.table(data);
+        //     // output.textContent = data.map(row => row.join(' ')).join('\n');
+        // });
+
+        // btnd.addEventListener('click', function () {
+        //     downmove()
+
+        //     addRrandomNumber();
+        //     renderGrid(data, gridBox)
+
+        //     console.table(data);
+        //     // output.textContent = data.map(row => row.join(' ')).join('\n');
+        // });
+
+        /**
+ * 核心动作封装：执行移动、生成新数字、刷新页面
+ * @param {Function} moveFn - 对应的移动函数 (upmove, downmove 等)
+ */
+        function handleMove(moveFn) {
+            // 1. 执行移动逻辑
+            moveFn();
+
+            // 2. 生成随机数字
+            addRrandomNumber();
+
+            // 3. 渲染最新的网格样式和数字
+            renderGrid(data, gridBox);
+
+            // 4. 终端打印调试（可选）
+            console.table(data);
+        }
+
+        // --- 1. 绑定鼠标点击事件 ---
+        btnl.addEventListener('click', () => handleMove(leftmove));
+        btnr.addEventListener('click', () => handleMove(rightmove));
+        btnu.addEventListener('click', () => handleMove(upmove));
+        btnd.addEventListener('click', () => handleMove(downmove));
+
+        // --- 2. 绑定键盘按键事件 ---
+        window.addEventListener('keydown', function (event) {
+            // 定义按键与函数的映射关系
+            const keyActionMap = {
+                "ArrowUp": upmove,
+                "ArrowDown": downmove,
+                "ArrowLeft": leftmove,
+                "ArrowRight": rightmove,
+                // 兼容小写字母 WASD
+                "w": upmove,
+                "s": downmove,
+                "a": leftmove,
+                "d": rightmove,
+                "W": upmove,
+                "S": downmove,
+                "A": leftmove,
+                "D": rightmove
+            };
+
+            const action = keyActionMap[event.key];
+
+            if (action) {
+                // 阻止方向键导致的浏览器窗口滚动
+                event.preventDefault();
+
+                // 调用封装好的处理函数
+                handleMove(action);
+            }
+        });
+
+
+
+
+        // 2. 在控制台以表格形式漂亮地显示
+        console.log("2048");
+        console.table(data);
+        console.log("test")
+
+
+    </script>
+</body>
+
+</html>

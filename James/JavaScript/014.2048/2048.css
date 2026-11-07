@@ -1,0 +1,23 @@
+#grid-container {
+    display: grid;
+    /* 定义 4 列，每列宽度平分 */
+    grid-template-columns: repeat(4, 1fr);
+    /* 定义 4 行，每行高度平分（也可以固定高度） */
+    grid-template-rows: repeat(4, 1fr);
+    gap: 10px;
+    /* 格子之间的间距 */
+    width: 400px;
+    height: 400px;
+}
+
+.grid-item {
+    background-color: #3498db;
+    color: white;
+    display: flex;
+    align-items: center;
+    /* 文字垂直居中 */
+    justify-content: center;
+    /* 文字水平居中 */
+    font-size: 20px;
+    border-radius: 8px;
+}
